@@ -18,7 +18,7 @@ class Class(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(user, on_delete=models.CASCADE)
-    classes = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='students')
+    classes = models.ManyToManyField(Class, related_name='students')
     
     def __str__(self):
         return self.user.email
