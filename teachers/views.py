@@ -8,9 +8,16 @@ from accounts.permissions import IsPrincipalOrReadOnly
 
 class TeacherListCreateView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = TeacherSerializer
 
     def get(self, request):
+        from rest_framework.pagination import PageNumberPagination
         teachers = Teacher.objects.all()
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(teachers, request)
+        if page is not None:
+            serializer = TeacherSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = TeacherSerializer(teachers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -23,6 +30,7 @@ class TeacherListCreateView(APIView):
 
 class TeacherDetailView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = TeacherSerializer
 
     def get_object(self, pk):
         return get_object_or_404(Teacher, pk=pk)

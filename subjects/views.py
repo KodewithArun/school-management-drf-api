@@ -8,9 +8,16 @@ from accounts.permissions import IsPrincipalOrReadOnly
 
 class SubjectListCreateView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = SubjectSerializer
 
     def get(self, request):
+        from rest_framework.pagination import PageNumberPagination
         subjects = Subject.objects.all()
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(subjects, request)
+        if page is not None:
+            serializer = SubjectSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = SubjectSerializer(subjects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -23,6 +30,7 @@ class SubjectListCreateView(APIView):
 
 class SubjectDetailView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = SubjectSerializer
 
     def get_object(self, pk):
         return get_object_or_404(Subject, pk=pk)

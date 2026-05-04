@@ -29,6 +29,7 @@ class StudentAPITest(APITestCase):
 
     def test_get_students_list(self):
         # 1. Simulate a GET request to the explicit URL the router built
+        self.client.force_authenticate(user=self.user)
         response = self.client.get('/api/students/')
         
         # 2. ASSERT: Did the server return a 200 OK?

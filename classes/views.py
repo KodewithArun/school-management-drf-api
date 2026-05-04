@@ -8,9 +8,16 @@ from accounts.permissions import IsPrincipalOrReadOnly, IsTeacherOrReadOnly
 
 class ClassListCreateView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = ClassSerializer
 
     def get(self, request):
+        from rest_framework.pagination import PageNumberPagination
         classes = Class.objects.all()
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(classes, request)
+        if page is not None:
+            serializer = ClassSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = ClassSerializer(classes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -23,6 +30,7 @@ class ClassListCreateView(APIView):
 
 class ClassDetailView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = ClassSerializer
 
     def get_object(self, pk):
         return get_object_or_404(Class, pk=pk)
@@ -47,9 +55,16 @@ class ClassDetailView(APIView):
 
 class SectionListCreateView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = SectionSerializer
 
     def get(self, request):
+        from rest_framework.pagination import PageNumberPagination
         sections = Section.objects.all()
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(sections, request)
+        if page is not None:
+            serializer = SectionSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = SectionSerializer(sections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -62,6 +77,7 @@ class SectionListCreateView(APIView):
 
 class SectionDetailView(APIView):
     permission_classes = [IsPrincipalOrReadOnly]
+    serializer_class = SectionSerializer
 
     def get_object(self, pk):
         return get_object_or_404(Section, pk=pk)
@@ -86,9 +102,16 @@ class SectionDetailView(APIView):
 
 class TimetableListCreateView(APIView):
     permission_classes = [IsTeacherOrReadOnly]
+    serializer_class = TimetableSerializer
 
     def get(self, request):
+        from rest_framework.pagination import PageNumberPagination
         timetables = Timetable.objects.all()
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(timetables, request)
+        if page is not None:
+            serializer = TimetableSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = TimetableSerializer(timetables, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -101,6 +124,7 @@ class TimetableListCreateView(APIView):
 
 class TimetableDetailView(APIView):
     permission_classes = [IsTeacherOrReadOnly]
+    serializer_class = TimetableSerializer
 
     def get_object(self, pk):
         return get_object_or_404(Timetable, pk=pk)

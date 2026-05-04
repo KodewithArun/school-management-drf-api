@@ -24,20 +24,26 @@ class IsStudent(BasePermission):
 class IsPrincipalOrReadOnly(BasePermission):
     """
     Principal has full access, others have read-only.
+    Requires authentication for any access.
     """
     def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'principal')
+        return request.user.role == 'principal'
 
 class IsTeacherOrReadOnly(BasePermission):
     """
     Teachers and Principals have edit access, others read-only.
+    Requires authentication for any access.
     """
     def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
         if request.method in SAFE_METHODS:
             return True
-        return bool(request.user and request.user.is_authenticated and request.user.role in ['principal', 'teacher'])
+        return request.user.role in ['principal', 'teacher']
 
 class IsTeacherOrPrincipalReadOnly(BasePermission):
     """
