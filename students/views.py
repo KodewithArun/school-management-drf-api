@@ -1,46 +1,26 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import Student
 from .serializers import StudentSerializer
 from accounts.permissions import IsPrincipalOrReadOnly
 
-class StudentListCreateView(APIView):
+class StudentViewSet(viewsets.ModelViewSet):
+    # 1. OPTIMIZATION: Fix N+1 problem right in the base queryset
+    queryset = Student.objects.select_related('user').prefetch_related('classes').all()
+    
+    # 2. REQUIRED: Define the serializer and permissions
+    serializer_class = StudentSerializer
     permission_classes = [IsPrincipalOrReadOnly]
-
-    def get(self, request):
-        students = Student.objects.all()
-        serializer = StudentSerializer(students, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class StudentDetailView(APIView):
-    permission_classes = [IsPrincipalOrReadOnly]
-
-    def get_object(self, pk):
-        return get_object_or_404(Student, pk=pk)
-
-    def get(self, request, pk):
-        student_obj = self.get_object(pk)
-        serializer = StudentSerializer(student_obj)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk):
-        student_obj = self.get_object(pk)
-        serializer = StudentSerializer(student_obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        student_obj = self.get_object(pk)
-        student_obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    # 3. ADVANCED FEATURES: Enable Filtering, Searching, and Ordering
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    
+    # ?is_active=True&user__role=student
+    filterset_fields = ['is_active', 'user__role']
+    
+    # ?search=Aryan (Searches multiple columns automatically)
+    search_fields = ['user__email', 'user__first_name', 'user__last_name', 'user__phone_number']
+    
+    # ?ordering=-created_at
+    ordering_fields = ['created_at', 'user__first_name']
