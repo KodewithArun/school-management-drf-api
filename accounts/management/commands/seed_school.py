@@ -20,13 +20,21 @@ class Command(BaseCommand):
         
         self.stdout.write('Seeding new data...')
 
-        # 1. Create Principal
+        # 1. Create Principal (is_staff + is_superuser so they can access Django Admin)
         principal_user, created = User.objects.get_or_create(
             email='principal@gmail.com',
             username='principal',
-            defaults={'role': 'principal', 'first_name': 'Arun', 'last_name': 'Karki'}
+            defaults={
+                'role': 'principal',
+                'first_name': 'Arun',
+                'last_name': 'Karki',
+                'is_staff': True,
+                'is_superuser': True,
+            }
         )
         principal_user.set_password('password123')
+        principal_user.is_staff = True       # ensure updated even if user already existed
+        principal_user.is_superuser = True
         principal_user.save()
 
         # 2. Create Classes (Grades 6 to 12)
