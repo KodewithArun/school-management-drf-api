@@ -7,7 +7,7 @@ from accounts.permissions import IsPrincipalOrReadOnly
 
 class StudentViewSet(viewsets.ModelViewSet):
     # 1. OPTIMIZATION: Fix N+1 problem right in the base queryset
-    queryset = Student.objects.select_related('user').prefetch_related('classes').all()
+    queryset = Student.objects.select_related('user').prefetch_related('classes').all().order_by('-created_at')
     
     # 2. REQUIRED: Define the serializer and permissions
     serializer_class = StudentSerializer
